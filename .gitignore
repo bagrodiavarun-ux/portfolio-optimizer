@@ -7,6 +7,11 @@
 portfolio_report_*.txt
 *.pdf
 
+# Personal/Local Files (not for public GitHub)
+RESUME_AND_LINKEDIN.md
+GITHUB_PUSH_GUIDE.md
+PROJECT_COMPLETION_SUMMARY.md
+
 # Python
 __pycache__/
 *.py[cod]

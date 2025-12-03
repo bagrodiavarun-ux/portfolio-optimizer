@@ -18,10 +18,10 @@ def get_current_risk_free_rate() -> float:
     """
     try:
         # Fetch 10-year Treasury yield from Yahoo Finance
-        treasury = yf.download('^TNX', period='1d', progress=False, timeout=5)
+        treasury = yf.download('^TNX', period='1d', progress=False, timeout=5, auto_adjust=False)
         if not treasury.empty:
             # TNX is already in percentage (e.g., 4.50 for 4.5%)
-            current_yield_pct = float(treasury['Close'].iloc[-1])
+            current_yield_pct = treasury['Close'].iloc[-1].item()
             current_yield = current_yield_pct / 100  # Convert to decimal
             print(f"✓ Current 10-year Treasury yield: {current_yield_pct:.2f}%")
             return current_yield
@@ -60,7 +60,8 @@ class YahooFinanceAPI:
                 symbol,
                 period=period,
                 progress=False,
-                timeout=10
+                timeout=10,
+                auto_adjust=False
             )
 
             if data.empty:
@@ -123,7 +124,8 @@ class YahooFinanceAPI:
                 symbols,
                 period=period,
                 progress=False,
-                timeout=10
+                timeout=10,
+                auto_adjust=False
             )
 
             if data.empty:

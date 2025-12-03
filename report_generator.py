@@ -91,7 +91,7 @@ class PortfolioReport:
 
         output += f"\nExpected Annual Return:     {max_sharpe['return'] * 252:7.2%}\n"
         output += f"Expected Annual Volatility: {max_sharpe['volatility'] * np.sqrt(252):7.2%}\n"
-        output += f"Sharpe Ratio:               {max_sharpe['sharpe_ratio']:7.4f}\n"
+        output += f"Sharpe Ratio (Annual):      {max_sharpe['sharpe_ratio'] * np.sqrt(252):7.4f}\n"
 
         # Min Variance Portfolio
         output += self._subsection_header("B. Minimum Variance Portfolio (Lowest Risk)")
@@ -104,7 +104,7 @@ class PortfolioReport:
 
         output += f"\nExpected Annual Return:     {min_var['return'] * 252:7.2%}\n"
         output += f"Expected Annual Volatility: {min_var['volatility'] * np.sqrt(252):7.2%}\n"
-        output += f"Sharpe Ratio:               {min_var['sharpe_ratio']:7.4f}\n"
+        output += f"Sharpe Ratio (Annual):      {min_var['sharpe_ratio'] * np.sqrt(252):7.4f}\n"
 
         return output
 
@@ -113,12 +113,12 @@ class PortfolioReport:
         output = self._section_header("5. CAPITAL MARKET LINE (CML) ANALYSIS")
 
         max_sharpe = self.optimizer.max_sharpe_portfolio()
-        cml = CapitalMarketLine(max_sharpe, self.optimizer.risk_free_rate)
+        cml = CapitalMarketLine(max_sharpe, self.optimizer.annual_risk_free_rate)
 
         output += f"Risk-Free Rate:             {self.optimizer.annual_risk_free_rate:7.2%} (annual)\n"
-        output += f"Market Portfolio Return:    {cml.market_return * 252:7.2%} (annual)\n"
-        output += f"Market Portfolio Volatility: {cml.market_volatility * np.sqrt(252):7.2%} (annual)\n"
-        output += f"Sharpe Ratio (Market):      {cml.sharpe_ratio:7.4f}\n"
+        output += f"Market Portfolio Return:    {cml.market_return_annual:7.2%} (annual)\n"
+        output += f"Market Portfolio Volatility: {cml.market_volatility_annual:7.2%} (annual)\n"
+        output += f"Sharpe Ratio (Market):      {cml.sharpe_ratio_annual:7.4f}\n"
 
         output += self._subsection_header("CML Implied Returns for Different Risk Levels")
 
@@ -126,7 +126,7 @@ class PortfolioReport:
         output += f"{'Volatility':<15} {'Expected Return':<20}\n"
         for vol in risk_levels:
             ret = cml.expected_return(vol)
-            output += f"{vol:>13.1%}  {ret*252:>18.2%}\n"
+            output += f"{vol:>13.1%}  {ret:>18.2%}\n"
 
         return output
 
@@ -141,7 +141,7 @@ class PortfolioReport:
 
         for idx in range(0, len(frontier), len(frontier) // 5):
             row = frontier.iloc[idx]
-            output += f"{row['return']*252:>13.2%}  {row['volatility']*np.sqrt(252):>13.2%}  {row['sharpe_ratio']:>13.4f}\n"
+            output += f"{row['return']*252:>13.2%}  {row['volatility']*np.sqrt(252):>13.2%}  {row['sharpe_ratio']*np.sqrt(252):>13.4f}\n"
 
         return output
 
@@ -157,13 +157,22 @@ class PortfolioReport:
         output += f"  - Average correlation: {self.optimizer.correlation_matrix.values[np.triu_indices_from(self.optimizer.correlation_matrix.values, k=1)].mean():.4f}\n"
 
         output += "\n• Risk-Return Profile:\n"
-        output += f"  - Max Sharpe portfolio offers {max_sharpe['sharpe_ratio']/min_var['sharpe_ratio']:.2f}x better risk-adjusted returns\n"
+        # Only show Sharpe ratio comparison if both are positive
+        max_sharpe_annual = max_sharpe['sharpe_ratio'] * np.sqrt(252)
+        min_var_annual = min_var['sharpe_ratio'] * np.sqrt(252)
+        if min_var_annual > 0 and max_sharpe_annual > min_var_annual:
+            output += f"  - Max Sharpe portfolio offers {max_sharpe_annual/min_var_annual:.2f}x better risk-adjusted returns\n"
+        elif max_sharpe_annual > 0:
+            output += f"  - Max Sharpe portfolio Sharpe ratio: {max_sharpe_annual:.4f}\n"
+            output += f"  - Min Variance portfolio Sharpe ratio: {min_var_annual:.4f}\n"
         output += f"  - Risk difference: {(max_sharpe['volatility'] - min_var['volatility'])*np.sqrt(252):.2%}\n"
 
         output += "\n• Recommendation:\n"
-        if max_sharpe['sharpe_ratio'] > 0.5:
+        # Use annualized Sharpe ratio (>1.0 is generally considered good)
+        max_sharpe_annual = max_sharpe['sharpe_ratio'] * np.sqrt(252)
+        if max_sharpe_annual > 1.0:
             output += "  ✓ Strong risk-adjusted returns available in this portfolio\n"
-        elif max_sharpe['sharpe_ratio'] > 0:
+        elif max_sharpe_annual > 0.5:
             output += "  ⚠ Moderate risk-adjusted returns; consider diversification\n"
         else:
             output += "  ✗ Poor risk-adjusted returns; portfolio may not be suitable\n"

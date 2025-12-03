@@ -201,23 +201,52 @@ class CapitalMarketLine:
         Initialize CML.
 
         Args:
-            max_sharpe_portfolio: Dict with 'return', 'volatility', 'sharpe_ratio'
-            risk_free_rate: Annual risk-free rate
+            max_sharpe_portfolio: Dict with 'return', 'volatility', 'sharpe_ratio' (all daily)
+            risk_free_rate: Annual risk-free rate (will be converted to daily)
         """
-        self.market_return = max_sharpe_portfolio['return']
-        self.market_volatility = max_sharpe_portfolio['volatility']
-        self.risk_free_rate = risk_free_rate
-        self.sharpe_ratio = max_sharpe_portfolio['sharpe_ratio']
+        # Convert annual risk-free rate to daily for consistency with daily inputs
+        self.risk_free_rate_daily = risk_free_rate / 252
+        self.risk_free_rate_annual = risk_free_rate
+
+        self.market_return_daily = max_sharpe_portfolio['return']
+        self.market_return_annual = max_sharpe_portfolio['return'] * 252
+
+        self.market_volatility_daily = max_sharpe_portfolio['volatility']
+        self.market_volatility_annual = max_sharpe_portfolio['volatility'] * np.sqrt(252)
+
+        self.sharpe_ratio_daily = max_sharpe_portfolio['sharpe_ratio']
+        self.sharpe_ratio_annual = max_sharpe_portfolio['sharpe_ratio'] * np.sqrt(252)
 
     def expected_return(self, portfolio_volatility: float) -> float:
-        """Calculate expected return for a given volatility on the CML."""
-        return self.risk_free_rate + self.sharpe_ratio * portfolio_volatility
+        """
+        Calculate expected return for a given volatility on the CML.
+
+        Args:
+            portfolio_volatility: Annual volatility (as decimal, e.g., 0.20 for 20%)
+
+        Returns:
+            Annual expected return (as decimal)
+        """
+        # Convert annual volatility to daily
+        daily_vol = portfolio_volatility / np.sqrt(252)
+        # Calculate daily return using daily sharpe ratio
+        daily_return = self.risk_free_rate_daily + self.sharpe_ratio_daily * daily_vol
+        # Annualize the result
+        return daily_return * 252
 
     def required_volatility(self, target_return: float) -> float:
-        """Calculate required volatility to achieve target return on the CML."""
-        if target_return < self.risk_free_rate:
+        """
+        Calculate required volatility to achieve target return on the CML.
+
+        Args:
+            target_return: Annual target return (as decimal)
+
+        Returns:
+            Annual volatility needed to achieve target (as decimal)
+        """
+        if target_return < self.risk_free_rate_annual:
             return 0
-        return (target_return - self.risk_free_rate) / self.sharpe_ratio
+        return (target_return - self.risk_free_rate_annual) / self.sharpe_ratio_annual
 
 
 class SecurityMarketLine:

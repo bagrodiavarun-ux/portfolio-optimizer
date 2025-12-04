@@ -32,6 +32,8 @@ class PortfolioOptimizer:
         # Check covariance matrix invertibility (detect highly correlated assets)
         cond_number = np.linalg.cond(self.cov_matrix)
         if cond_number > 1e10:
+            # Detect perfect correlations (common issue with highly correlated pairs)
+            self._detect_perfect_correlations()
             raise ValueError(
                 f"Assets too highly correlated (condition number: {cond_number:.2e}). "
                 f"Consider removing duplicate or highly correlated assets."
@@ -39,6 +41,22 @@ class PortfolioOptimizer:
 
         self.std_devs = returns.std()
         self.correlation_matrix = returns.corr()
+
+    def _detect_perfect_correlations(self) -> None:
+        """
+        Detect and warn about nearly perfect correlations between assets.
+        Helps users identify why optimization is failing.
+        """
+        corr_matrix = self.correlation_matrix
+        # Check upper triangle of correlation matrix
+        for i in range(len(corr_matrix)):
+            for j in range(i + 1, len(corr_matrix)):
+                corr_value = abs(corr_matrix.iloc[i, j])
+                if corr_value > 0.95:  # Very high correlation
+                    asset_i = corr_matrix.columns[i]
+                    asset_j = corr_matrix.columns[j]
+                    print(f"\n⚠ Warning: {asset_i} and {asset_j} have very high correlation ({corr_value:.4f})")
+                    print(f"  Consider removing one of these assets for better optimization")
 
     def portfolio_stats(self, weights: np.ndarray) -> Tuple[float, float, float]:
         """
@@ -52,16 +70,24 @@ class PortfolioOptimizer:
         """
         port_return = np.sum(self.mean_returns * weights)
         variance = np.dot(weights.T, np.dot(self.cov_matrix, weights))
+
         # Clip negative variance to zero (numerical stability)
         if variance < 0:
             variance = 0
-        port_std = np.sqrt(variance)
 
-        # Handle division by zero in Sharpe ratio
-        if port_std < 1e-10:
+        # Check for zero variance asset
+        if variance < 1e-20:
+            # This happens with risk-free asset or no volatility
+            port_std = 0
             sharpe = 0
         else:
-            sharpe = (port_return - self.risk_free_rate) / port_std
+            port_std = np.sqrt(variance)
+
+            # Handle division by zero in Sharpe ratio
+            if port_std < 1e-10:
+                sharpe = 0
+            else:
+                sharpe = (port_return - self.risk_free_rate) / port_std
 
         return port_return, port_std, sharpe
 

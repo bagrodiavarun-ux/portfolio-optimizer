@@ -227,8 +227,21 @@ def main():
     except KeyboardInterrupt:
         print("\n\n✗ Analysis cancelled by user")
         sys.exit(0)
+    except ValueError as e:
+        # Catch specific optimization/correlation errors
+        error_msg = str(e)
+        print(f"\n✗ Error: {error_msg}")
+        if "correlated" in error_msg.lower():
+            print("\n💡 Suggestion: Try removing highly correlated stocks or using different stocks")
+            print("   Example: If you have MSFT and AAPL, try replacing one with a different sector")
+        elif "optimization failed" in error_msg.lower():
+            print("\n💡 Suggestion: This often happens with too few assets or high correlations")
+            print("   Try: Adding more assets, using different time periods, or removing correlations")
+        sys.exit(1)
     except Exception as e:
-        print(f"\n✗ Error: {e}")
+        print(f"\n✗ Unexpected error: {e}")
+        print("\n💡 Suggestion: Check your internet connection and try again")
+        print("   If the problem persists, try with different stocks or a shorter time period")
         import traceback
         traceback.print_exc()
         sys.exit(1)

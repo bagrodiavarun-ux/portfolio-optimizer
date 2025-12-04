@@ -158,6 +158,15 @@ class YahooFinanceAPI:
             print(f"✓ Data range: {returns_df.index[0].date()} to {returns_df.index[-1].date()}")
             print(f"✓ Trading days: {len(returns_df)}")
 
+            # Data quality check: detect extreme outliers that might indicate data errors
+            for col in returns_df.columns:
+                max_return = returns_df[col].max()
+                min_return = returns_df[col].min()
+                # Flag unusually large single-day moves (>10% is unusual but possible)
+                if abs(max_return) > 0.5 or abs(min_return) > 0.5:
+                    print(f"\n⚠ Warning: {col} has extreme daily return ({max(abs(max_return), abs(min_return)):.1%})")
+                    print(f"  This might indicate a stock split or data error - verify manually")
+
             return returns_df
 
         except Exception as e:

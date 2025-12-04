@@ -355,10 +355,22 @@ def generate_all_charts(optimizer: PortfolioOptimizer, returns: pd.DataFrame) ->
     max_sharpe = optimizer.max_sharpe_portfolio()
     min_var = optimizer.min_variance_portfolio()
 
+    # Handle edge case: empty frontier
+    if frontier.empty:
+        print("⚠ Warning: Could not generate efficient frontier - using minimal visualization")
+        frontier = pd.DataFrame({'volatility': [0], 'return': [0], 'sharpe_ratio': [0]})
+
     fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(frontier['volatility'] * np.sqrt(252) * 100,
-           frontier['return'] * 252 * 100,
-           'b-', linewidth=2.5, label='Efficient Frontier')
+
+    # Safely plot frontier with validation
+    frontier_vol = frontier['volatility'] * np.sqrt(252) * 100
+    frontier_ret = frontier['return'] * 252 * 100
+    # Handle extreme values
+    if frontier_vol.max() > 0:
+        ax.plot(frontier_vol, frontier_ret,
+               'b-', linewidth=2.5, label='Efficient Frontier')
+    else:
+        print("⚠ Warning: Frontier volatility is zero - skipping frontier line")
 
     for asset in optimizer.assets:
         annual_return = optimizer.mean_returns[asset] * 252 * 100

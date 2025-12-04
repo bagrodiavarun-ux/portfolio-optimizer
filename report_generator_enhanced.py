@@ -56,123 +56,172 @@ class EnhancedPortfolioReport:
             box-sizing: border-box;
         }}
         body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
         }}
         .container {{
             max-width: 1200px;
             margin: 0 auto;
             background-color: white;
-            padding: 40px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 50px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }}
         .header {{
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid #2c3e50;
-            padding-bottom: 20px;
+            margin-bottom: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            border-radius: 10px;
+            color: white;
         }}
         .header h1 {{
-            font-size: 32px;
-            color: #2c3e50;
-            margin-bottom: 10px;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
         }}
         .header p {{
-            color: #7f8c8d;
-            font-size: 14px;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 16px;
+            margin: 8px 0;
         }}
         .section {{
-            margin-bottom: 40px;
+            margin-bottom: 50px;
         }}
         .section-title {{
-            font-size: 24px;
+            font-size: 26px;
+            font-weight: 700;
             color: #2c3e50;
-            border-left: 5px solid #3498db;
-            padding-left: 15px;
-            margin-bottom: 20px;
-            margin-top: 30px;
+            border-left: 6px solid #667eea;
+            padding-left: 20px;
+            margin-bottom: 30px;
+            margin-top: 40px;
+            letter-spacing: -0.3px;
         }}
         .subsection-title {{
             font-size: 18px;
+            font-weight: 600;
             color: #34495e;
-            margin-top: 15px;
-            margin-bottom: 10px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ecf0f1;
         }}
         .chart-container {{
-            margin: 25px 0;
+            margin: 30px 0;
             text-align: center;
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #ecf0f1;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }}
+        .chart-container h3 {{
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
         }}
         .chart-container img {{
             max-width: 100%;
             height: auto;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }}
         table {{
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
+            margin: 25px 0;
             background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }}
         th {{
-            background-color: #34495e;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px;
+            padding: 16px;
             text-align: left;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
         }}
         td {{
-            padding: 12px;
+            padding: 14px 16px;
             border-bottom: 1px solid #ecf0f1;
+            font-size: 15px;
+        }}
+        tr:hover {{
+            background-color: #f8f9fa;
+            transition: background-color 0.2s ease;
         }}
         tr:nth-child(even) {{
-            background-color: #f9f9f9;
+            background-color: #f8f9fa;
         }}
         .highlight {{
-            background-color: #fff3cd;
-            padding: 15px;
-            border-left: 4px solid #ffc107;
-            margin: 15px 0;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #fff5f7 0%, #fff9e6 100%);
+            padding: 20px;
+            border-left: 5px solid #f39c12;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.1);
+        }}
+        .highlight strong {{
+            color: #2c3e50;
         }}
         .metric {{
             display: inline-block;
-            background-color: #ecf0f1;
-            padding: 10px 20px;
-            margin: 5px;
-            border-radius: 4px;
-            font-weight: bold;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e7ff 100%);
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 6px;
+            font-weight: 600;
             color: #2c3e50;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }}
+        .metric:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.25);
         }}
         .positive {{
             color: #27ae60;
+            font-weight: 700;
         }}
         .negative {{
             color: #e74c3c;
+            font-weight: 700;
         }}
         .neutral {{
             color: #3498db;
+            font-weight: 700;
         }}
         footer {{
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ecf0f1;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 2px solid #ecf0f1;
             color: #7f8c8d;
-            font-size: 12px;
+            font-size: 13px;
             text-align: center;
+            line-height: 1.8;
         }}
         .recommendation {{
-            background-color: #d5f4e6;
-            padding: 15px;
-            border-left: 4px solid #27ae60;
-            margin: 15px 0;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #d5f4e6 0%, #e8f8f0 100%);
+            padding: 20px;
+            border-left: 5px solid #27ae60;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.1);
+        }}
+        .recommendation strong {{
+            color: #2c3e50;
         }}
     </style>
 </head>

@@ -318,10 +318,112 @@ class EnhancedPortfolioReport:
 
         # Charts Section
         report += '<div class="section">'
-        report += '<div class="section-title">4. Visualizations</div>'
+        report += '<div class="section-title">4. Visualizations & Analysis</div>'
 
+        # Efficient Frontier Chart
+        if 'efficient_frontier' in self.charts:
+            report += '<div class="subsection-title">A. Efficient Frontier & Capital Market Line</div>'
+            report += f'<div class="chart-container">'
+            report += f'<img src="data:image/png;base64,{self.charts["efficient_frontier"]}" alt="Efficient Frontier">'
+            report += f'</div>'
+            report += '<div class="recommendation">'
+            report += '<strong>What This Graph Shows:</strong><br>'
+            report += 'The Efficient Frontier represents all portfolios that offer the maximum expected return for a given level of risk. '
+            report += 'The Capital Market Line (CML) shows the trade-off between risk and return when combining risky assets with risk-free assets. '
+            report += 'The green star marks the portfolio with the Maximum Sharpe Ratio (best risk-adjusted returns), '
+            report += 'while the orange square shows the Minimum Variance portfolio (lowest risk).'
+            report += '</div>'
+
+            # Generate insights
+            max_sharpe = self.optimizer.max_sharpe_portfolio()
+            min_var = self.optimizer.min_variance_portfolio()
+            frontier = self.optimizer.efficient_frontier(n_points=20)
+
+            report += '<div class="highlight">'
+            report += '<strong>📊 Key Insights from Efficient Frontier:</strong><br>'
+            report += f'• <strong>Maximum Sharpe Portfolio:</strong> Return {max_sharpe["return"]*252:.2%}, Risk {max_sharpe["volatility"]*np.sqrt(252):.2%}, Sharpe {max_sharpe["sharpe_ratio"]*np.sqrt(252):.4f}<br>'
+            report += f'• <strong>Minimum Variance Portfolio:</strong> Return {min_var["return"]*252:.2%}, Risk {min_var["volatility"]*np.sqrt(252):.2%}<br>'
+            report += f'• <strong>Risk Range on Frontier:</strong> {frontier["volatility"].min()*np.sqrt(252):.2%} to {frontier["volatility"].max()*np.sqrt(252):.2%}<br>'
+
+            # Calculate the Sharpe improvement
+            max_sharpe_annual = max_sharpe['sharpe_ratio'] * np.sqrt(252)
+            min_var_annual = min_var['sharpe_ratio'] * np.sqrt(252)
+            if max_sharpe_annual > 0 and min_var_annual > 0:
+                improvement = (max_sharpe_annual / min_var_annual - 1) * 100
+                report += f'• <strong>Sharpe Ratio Improvement:</strong> Max Sharpe is {improvement:.1f}% better than Min Variance<br>'
+
+            report += '</div>'
+
+        # Security Market Line Chart
+        if 'security_market_line' in self.charts:
+            report += '<div class="subsection-title">B. Security Market Line (CAPM Analysis)</div>'
+            report += f'<div class="chart-container">'
+            report += f'<img src="data:image/png;base64,{self.charts["security_market_line"]}" alt="Security Market Line">'
+            report += f'</div>'
+            report += '<div class="recommendation">'
+            report += '<strong>What This Graph Shows:</strong><br>'
+            report += 'The Security Market Line (SML) shows the relationship between systematic risk (Beta) and expected return based on the CAPM model. '
+            report += 'The blue dashed line represents the fair value of each security. '
+            report += '<strong>Green points:</strong> Assets trading below the SML (positive alpha) are undervalued. '
+            report += '<strong>Red points:</strong> Assets above the SML (negative alpha) are overvalued. '
+            report += 'The purple diamond marks the S&P 500 market portfolio at Beta=1.0.'
+            report += '</div>'
+
+            try:
+                import yfinance as yf
+                sp500_data = yf.download('^GSPC', start=self.returns.index[0], end=self.returns.index[-1],
+                                         progress=False, auto_adjust=True)
+                if not sp500_data.empty and len(sp500_data) > 1:
+                    sp500_returns = sp500_data['Close'].pct_change().dropna()
+                    sp500_returns = sp500_returns.loc[self.returns.index]
+
+                    from portfolio import SecurityMarketLine
+
+                    max_sharpe = self.optimizer.max_sharpe_portfolio()
+                    sml = SecurityMarketLine(
+                        market_return=sp500_returns.mean() * 252,
+                        market_volatility=sp500_returns.std() * np.sqrt(252),
+                        risk_free_rate=self.optimizer.annual_risk_free_rate,
+                        asset_returns=self.returns
+                    )
+
+                    analysis = sml.analyze_assets(sp500_returns)
+
+                    report += '<div class="highlight">'
+                    report += '<strong>📈 Asset Valuation Summary (vs S&P 500):</strong><br>'
+                    report += '<table><tr><th>Asset</th><th>Beta</th><th>Alpha</th><th>Valuation</th><th>Expected Return</th></tr>'
+
+                    for _, row in analysis.iterrows():
+                        valuation_class = 'positive' if row['alpha'] > 0 else 'negative'
+                        valuation_text = '✓ Undervalued' if row['alpha'] > 0 else '✗ Overvalued'
+                        report += f'<tr><td><strong>{row["asset"]}</strong></td>'
+                        report += f'<td>{row["beta"]:.4f}</td>'
+                        report += f'<td class="{valuation_class}">{row["alpha"]:.4f}</td>'
+                        report += f'<td class="{valuation_class}">{valuation_text}</td>'
+                        report += f'<td>{row["expected_return"]*252:.2%}</td></tr>'
+
+                    report += '</table>'
+                    report += '</div>'
+
+                    # Analysis insights
+                    positive_alpha = len(analysis[analysis['alpha'] > 0])
+                    negative_alpha = len(analysis[analysis['alpha'] <= 0])
+
+                    report += '<div class="highlight">'
+                    report += '<strong>💡 CAPM Analysis Insights:</strong><br>'
+                    report += f'• <strong>Undervalued Assets:</strong> {positive_alpha} out of {len(analysis)} assets have positive alpha<br>'
+                    report += f'• <strong>Overvalued Assets:</strong> {negative_alpha} out of {len(analysis)} assets have negative alpha<br>'
+                    report += f'• <strong>Market Proxy:</strong> S&P 500 (Beta = 1.0, Market Return = {sp500_returns.mean()*252:.2%})<br>'
+                    report += f'• <strong>Risk-Free Rate:</strong> {self.optimizer.annual_risk_free_rate:.2%}<br>'
+                    report += '<br><strong>Interpretation:</strong> Assets with positive alpha offer excess returns above what CAPM predicts for their risk level. '
+                    report += 'Assets with negative alpha are riskier than their returns justify relative to the market.'
+                    report += '</div>'
+
+            except Exception:
+                report += f'<div class="highlight"><strong>Note:</strong> Could not fetch S&P 500 data for full CAPM analysis</div>'
+
+        # Other Charts
         chart_titles = {
-            'efficient_frontier': 'Efficient Frontier & Capital Market Line',
             'correlation_heatmap': 'Asset Correlation Matrix',
             'risk_return_scatter': 'Risk-Return Profile',
             'sharpe_comparison': 'Sharpe Ratio Comparison',
@@ -331,8 +433,8 @@ class EnhancedPortfolioReport:
 
         for chart_key, chart_title in chart_titles.items():
             if chart_key in self.charts:
+                report += f'<div class="subsection-title">{chr(67 + list(chart_titles.keys()).index(chart_key))}. {chart_title}</div>'
                 report += f'<div class="chart-container">'
-                report += f'<h3>{chart_title}</h3>'
                 report += f'<img src="data:image/png;base64,{self.charts[chart_key]}" alt="{chart_title}">'
                 report += f'</div>'
 

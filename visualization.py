@@ -505,6 +505,67 @@ def generate_all_charts(optimizer: PortfolioOptimizer, returns: pd.DataFrame) ->
     plt.tight_layout()
     charts['allocation_comparison'] = fig_to_base64(fig)
 
+    # 7. Security Market Line (using S&P 500 as market proxy)
+    try:
+        import yfinance as yf
+        # Fetch S&P 500 data for the same period as the portfolio stocks
+        sp500_data = yf.download('^GSPC', start=returns.index[0], end=returns.index[-1],
+                                  progress=False, auto_adjust=True)
+        if not sp500_data.empty and len(sp500_data) > 1:
+            sp500_returns = sp500_data['Close'].pct_change().dropna()
+            # Align with portfolio returns
+            sp500_returns = sp500_returns.loc[returns.index]
+
+            from portfolio import SecurityMarketLine
+
+            max_sharpe = optimizer.max_sharpe_portfolio()
+            sml = SecurityMarketLine(
+                market_return=sp500_returns.mean() * 252,
+                market_volatility=sp500_returns.std() * np.sqrt(252),
+                risk_free_rate=optimizer.annual_risk_free_rate,
+                asset_returns=returns
+            )
+
+            analysis = sml.analyze_assets(sp500_returns)
+
+            fig, ax = plt.subplots(figsize=(12, 8))
+
+            # Plot individual assets
+            colors = plt.cm.Set3(np.linspace(0, 1, len(optimizer.assets)))
+            for idx, (_, row) in enumerate(analysis.iterrows()):
+                color = 'green' if row['alpha'] > 0 else 'red'
+                ax.scatter(row['beta'], row['expected_return'] * 252,
+                          s=300, alpha=0.7, label=row['asset'],
+                          color=color, edgecolors='black', linewidth=2)
+                ax.annotate(row['asset'], (row['beta'], row['expected_return'] * 252),
+                           xytext=(5, 5), textcoords='offset points', fontsize=10, fontweight='bold')
+
+            # Plot SML line
+            beta_range = np.linspace(0, max(analysis['beta'].max(), 2), 100)
+            sml_returns = np.array([sml.required_return(b) for b in beta_range])
+
+            ax.plot(beta_range, sml_returns, 'b--', linewidth=2.5, label='Security Market Line')
+
+            # Plot risk-free asset
+            ax.scatter(0, optimizer.annual_risk_free_rate, marker='o', s=400,
+                      color='gold', label='Risk-Free Asset', edgecolors='darkgoldenrod', linewidth=2, zorder=5)
+
+            # Plot market portfolio (S&P 500)
+            market_return = sp500_returns.mean() * 252
+            ax.scatter(1, market_return, marker='D', s=400,
+                      color='purple', label='Market (S&P 500)', edgecolors='darkviolet', linewidth=2, zorder=5)
+
+            ax.set_xlabel('Beta (Market Risk)', fontsize=12, fontweight='bold')
+            ax.set_ylabel('Expected Annual Return', fontsize=12, fontweight='bold')
+            ax.set_title('Security Market Line (CAPM) - S&P 500 as Market Proxy', fontsize=14, fontweight='bold')
+            ax.legend(loc='best', fontsize=10)
+            ax.grid(True, alpha=0.3)
+            ax.axhline(y=optimizer.annual_risk_free_rate, color='gold', linestyle=':', alpha=0.5)
+
+            charts['security_market_line'] = fig_to_base64(fig)
+    except Exception as e:
+        print(f"⚠ Could not generate Security Market Line chart: {str(e)[:50]}")
+
     return charts
 
 

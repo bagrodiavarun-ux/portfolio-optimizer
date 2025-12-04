@@ -18,7 +18,7 @@ def get_current_risk_free_rate() -> float:
     """
     try:
         # Fetch 10-year Treasury yield from Yahoo Finance
-        treasury = yf.download('^TNX', period='1d', progress=False, timeout=5, auto_adjust=False)
+        treasury = yf.download('^TNX', period='1d', progress=False, timeout=5, auto_adjust=True)
         if not treasury.empty:
             # TNX is already in percentage (e.g., 4.50 for 4.5%)
             current_yield_pct = treasury['Close'].iloc[-1].item()
@@ -54,6 +54,8 @@ class YahooFinanceAPI:
         """
         try:
             print(f"Fetching data for {symbol}...", end=" ")
+            # Note: auto_adjust=True automatically adjusts prices for stock splits and dividends
+            # This ensures accurate return calculations for portfolio analysis
 
             # Download data from Yahoo Finance
             data = yf.download(
@@ -61,7 +63,7 @@ class YahooFinanceAPI:
                 period=period,
                 progress=False,
                 timeout=10,
-                auto_adjust=False
+                auto_adjust=True
             )
 
             if data.empty:
@@ -108,6 +110,9 @@ class YahooFinanceAPI:
         """
         Fetch stock data and convert to daily returns.
 
+        Prices are automatically adjusted for stock splits and dividends using auto_adjust=True.
+        This ensures accurate returns calculation that reflects true investment performance.
+
         Args:
             symbols: List of stock tickers
             period: Data period ('1y', '2y', '5y', etc.)
@@ -125,7 +130,7 @@ class YahooFinanceAPI:
                 period=period,
                 progress=False,
                 timeout=10,
-                auto_adjust=False
+                auto_adjust=True
             )
 
             if data.empty:

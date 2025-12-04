@@ -8,6 +8,7 @@ from typing import List
 from data_fetcher_yfinance import YahooFinanceAPI, get_current_risk_free_rate
 from portfolio import PortfolioOptimizer
 from report_generator import PortfolioReport
+from report_generator_enhanced import EnhancedPortfolioReport
 
 
 def get_stock_symbols() -> List[str]:
@@ -75,6 +76,32 @@ def get_portfolio_name() -> str:
     return name if name else "My Portfolio"
 
 
+def get_report_format() -> str:
+    """
+    Get preferred report format from user.
+
+    Returns:
+        'text' for text report, 'html' for HTML with charts, 'both' for both formats
+    """
+    print("\n" + "=" * 80)
+    print("REPORT FORMAT")
+    print("=" * 80)
+    print("\nChoose report format:")
+    print("  1. Text Report (traditional format)")
+    print("  2. HTML Report with Charts (interactive, with visualizations)")
+    print("  3. Both Formats (generates both text and HTML)")
+    print("Default: 2 (HTML with interactive charts recommended)\n")
+
+    valid_formats = {'1': 'text', '2': 'html', '3': 'both'}
+
+    while True:
+        choice = input("Enter choice (1, 2, or 3) [default 2]: ").strip() or "2"
+        if choice in valid_formats:
+            return valid_formats[choice]
+        else:
+            print("✗ Please enter 1, 2, or 3")
+
+
 def main():
     """Main execution flow."""
     try:
@@ -100,7 +127,11 @@ def main():
         portfolio_name = get_portfolio_name()
         print(f"✓ Portfolio name: {portfolio_name}")
 
-        # Step 5: Fetch data
+        # Step 5: Get report format preference
+        report_format = get_report_format()
+        print(f"✓ Report format: {report_format.upper()}")
+
+        # Step 6: Fetch data
         print("\n" + "=" * 80)
         print("FETCHING REAL MARKET DATA")
         print("=" * 80)
@@ -111,7 +142,7 @@ def main():
             print("\n✗ Failed to fetch sufficient data. Please try again later.")
             return
 
-        # Step 6: Get current risk-free rate and initialize optimizer
+        # Step 7: Get current risk-free rate and initialize optimizer
         print("\n" + "=" * 80)
         print("OPTIMIZING PORTFOLIO")
         print("=" * 80)
@@ -125,25 +156,60 @@ def main():
 
         print("✓ Optimization complete!")
 
-        # Step 7: Generate report
+        # Step 8: Generate report in chosen format
         print("\n" + "=" * 80)
         print("GENERATING REPORT")
         print("=" * 80)
 
-        report = PortfolioReport(optimizer, portfolio_name=portfolio_name)
+        if report_format == 'text':
+            # Generate traditional text report
+            report = PortfolioReport(optimizer, portfolio_name=portfolio_name)
+            report.print_report()
+            text_file = report.save_report()
+            print(f"\n✓ Text report saved: {text_file}")
 
-        # Print to console
-        report.print_report()
+        elif report_format == 'html':
+            # Generate HTML report with charts
+            print("\n📊 Generating visualizations and HTML report...")
+            enhanced_report = EnhancedPortfolioReport(optimizer, returns_df, portfolio_name=portfolio_name)
+            html_file = enhanced_report.save_html_report()
+            print(f"✓ HTML report with charts saved: {html_file}")
+            print("\n📈 Charts included in HTML report:")
+            print("  ✓ Efficient Frontier with Capital Market Line")
+            print("  ✓ Asset Correlation Matrix")
+            print("  ✓ Risk-Return Scatter Plot")
+            print("  ✓ Sharpe Ratio Comparison")
+            print("  ✓ Cumulative Returns Over Time")
+            print("  ✓ Portfolio Allocation Comparison")
 
-        # Save to file
-        report.save_report()
+        elif report_format == 'both':
+            # Generate both formats
+            print("\n📊 Generating visualizations and reports...")
+
+            # Text report
+            report = PortfolioReport(optimizer, portfolio_name=portfolio_name)
+            text_file = report.save_report()
+            print(f"✓ Text report saved: {text_file}")
+
+            # HTML report with charts
+            enhanced_report = EnhancedPortfolioReport(optimizer, returns_df, portfolio_name=portfolio_name)
+            html_file = enhanced_report.save_html_report()
+            print(f"✓ HTML report with charts saved: {html_file}")
+            print("\n📈 Charts included in HTML report:")
+            print("  ✓ Efficient Frontier with Capital Market Line")
+            print("  ✓ Asset Correlation Matrix")
+            print("  ✓ Risk-Return Scatter Plot")
+            print("  ✓ Sharpe Ratio Comparison")
+            print("  ✓ Cumulative Returns Over Time")
+            print("  ✓ Portfolio Allocation Comparison")
 
         print("\n" + "=" * 80)
         print("✓ ANALYSIS COMPLETE")
         print("=" * 80)
         print("\nNext steps:")
-        print("  • Review the report above")
-        print("  • Check the saved report file for detailed analysis")
+        if report_format in ['html', 'both']:
+            print("  • Open the HTML file in your browser to view interactive charts")
+        print("  • Review the analysis and metrics")
         print("  • Consider your risk tolerance and investment goals")
         print("  • Consult a financial advisor before investing")
 

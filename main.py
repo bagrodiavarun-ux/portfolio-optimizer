@@ -35,10 +35,13 @@ def get_stock_symbols() -> List[str]:
                 continue
             break
 
-        if symbol and len(symbol) <= 5 and symbol.isalpha():
-            symbols.append(symbol)
-        else:
-            print("✗ Invalid ticker. Please try again.")
+        if len(symbol) < 1 or len(symbol) > 10:
+            print(f"✗ Ticker must be 1-10 characters")
+            continue
+        if not symbol.replace('-', '').replace('^', '').isalnum():
+            print(f"✗ Invalid characters in ticker (allowed: alphanumeric, dash, caret)")
+            continue
+        symbols.append(symbol)
 
     return symbols
 
@@ -140,6 +143,14 @@ def main():
 
         if returns_df is None or returns_df.empty or len(returns_df.columns) < 2:
             print("\n✗ Failed to fetch sufficient data. Please try again later.")
+            return
+
+        # Validate minimum data requirement (252 trading days = ~1 year)
+        min_required_days = 252
+        if len(returns_df) < min_required_days:
+            print(f"\n✗ Error: Only {len(returns_df)} trading days of data")
+            print(f"  Minimum required: {min_required_days} days (~1 year)")
+            print(f"  This ensures statistically reliable portfolio analysis")
             return
 
         # Step 7: Get current risk-free rate and initialize optimizer

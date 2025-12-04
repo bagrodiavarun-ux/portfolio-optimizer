@@ -70,6 +70,11 @@ class YahooFinanceAPI:
                 print(f"✗ No data found")
                 return None
 
+            # Validate ticker returns sufficient data
+            if len(data) < 30:
+                print(f"✗ Only {len(data)} days of data (< 30)")
+                return None
+
             # Reset index to make Date a column
             data.reset_index(inplace=True)
 

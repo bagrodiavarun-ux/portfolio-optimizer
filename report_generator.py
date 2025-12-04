@@ -56,8 +56,13 @@ class PortfolioReport:
 
         # Summary statistics
         output += self._subsection_header("Correlation Summary")
-        output += f"Highest Correlation: {self.optimizer.correlation_matrix.values[np.triu_indices_from(self.optimizer.correlation_matrix.values, k=1)].max():.4f}\n"
-        output += f"Lowest Correlation: {self.optimizer.correlation_matrix.values[np.triu_indices_from(self.optimizer.correlation_matrix.values, k=1)].min():.4f}\n"
+        # Handle single-asset portfolios (correlation matrix has no off-diagonal elements)
+        upper_triangle = self.optimizer.correlation_matrix.values[np.triu_indices_from(self.optimizer.correlation_matrix.values, k=1)]
+        if len(upper_triangle) > 0:
+            output += f"Highest Correlation: {upper_triangle.max():.4f}\n"
+            output += f"Lowest Correlation: {upper_triangle.min():.4f}\n"
+        else:
+            output += f"Note: Only one asset in portfolio - correlation matrix not applicable\n"
 
         return output
 

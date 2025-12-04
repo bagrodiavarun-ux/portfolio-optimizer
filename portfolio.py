@@ -155,10 +155,14 @@ class PortfolioOptimizer:
 
         frontier_portfolios = []
 
+        # Helper function to create return constraint with proper closure
+        def make_return_constraint(tr):
+            return lambda x: np.sum(self.mean_returns * x) - tr
+
         for target_return in target_returns:
             constraints = [
                 {'type': 'eq', 'fun': lambda x: np.sum(x) - 1},
-                {'type': 'eq', 'fun': lambda x: np.sum(self.mean_returns * x) - target_return}
+                {'type': 'eq', 'fun': make_return_constraint(target_return)}
             ]
             bounds = tuple((0, 1) for _ in range(self.n_assets))
             initial_guess = np.array([1 / self.n_assets] * self.n_assets)

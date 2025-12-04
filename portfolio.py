@@ -28,6 +28,15 @@ class PortfolioOptimizer:
         # Calculate statistics (daily)
         self.mean_returns = returns.mean()
         self.cov_matrix = returns.cov()
+
+        # Check covariance matrix invertibility (detect highly correlated assets)
+        cond_number = np.linalg.cond(self.cov_matrix)
+        if cond_number > 1e10:
+            raise ValueError(
+                f"Assets too highly correlated (condition number: {cond_number:.2e}). "
+                f"Consider removing duplicate or highly correlated assets."
+            )
+
         self.std_devs = returns.std()
         self.correlation_matrix = returns.corr()
 
@@ -42,8 +51,17 @@ class PortfolioOptimizer:
             Tuple of (return, volatility, sharpe_ratio)
         """
         port_return = np.sum(self.mean_returns * weights)
-        port_std = np.sqrt(np.dot(weights.T, np.dot(self.cov_matrix, weights)))
-        sharpe = (port_return - self.risk_free_rate) / port_std
+        variance = np.dot(weights.T, np.dot(self.cov_matrix, weights))
+        # Clip negative variance to zero (numerical stability)
+        if variance < 0:
+            variance = 0
+        port_std = np.sqrt(variance)
+
+        # Handle division by zero in Sharpe ratio
+        if port_std < 1e-10:
+            sharpe = 0
+        else:
+            sharpe = (port_return - self.risk_free_rate) / port_std
 
         return port_return, port_std, sharpe
 
@@ -74,6 +92,10 @@ class PortfolioOptimizer:
             constraints=constraints
         )
 
+        # Check optimization convergence
+        if not result.success:
+            raise ValueError(f"Optimization failed: {result.message}")
+
         weights = result.x
         port_return, port_vol, sharpe = self.portfolio_stats(weights)
 
@@ -102,6 +124,10 @@ class PortfolioOptimizer:
             bounds=bounds,
             constraints=constraints
         )
+
+        # Check optimization convergence
+        if not result.success:
+            raise ValueError(f"Optimization failed: {result.message}")
 
         weights = result.x
         port_return, port_vol, sharpe = self.portfolio_stats(weights)
@@ -181,6 +207,10 @@ class PortfolioOptimizer:
             bounds=bounds,
             constraints=constraints
         )
+
+        # Check optimization convergence
+        if not result.success:
+            raise ValueError(f"Optimization failed: {result.message}")
 
         weights = result.x
         port_return, port_vol, sharpe = self.portfolio_stats(weights)
@@ -278,6 +308,9 @@ class SecurityMarketLine:
         """
         covariance = asset_returns.cov(market_returns)
         market_variance = market_returns.var()
+        # Handle division by zero in beta calculation
+        if market_variance < 1e-10:
+            return 0
         return covariance / market_variance
 
     def calculate_alpha(self, asset_return: float, beta: float) -> float:

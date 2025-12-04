@@ -376,9 +376,13 @@ def generate_all_charts(optimizer: PortfolioOptimizer, returns: pd.DataFrame) ->
               label='Min Variance', zorder=5, edgecolors='darkorange', linewidth=2)
 
     cml = CapitalMarketLine(max_sharpe, optimizer.annual_risk_free_rate)
-    cml_x = np.linspace(0, frontier['volatility'].max() * np.sqrt(252) * 100, 100)
-    cml_y = cml.expected_return(cml_x / (np.sqrt(252) * 100)) * 252 * 100
-    ax.plot(cml_x, cml_y, 'r--', linewidth=2, label='Capital Market Line')
+    # CML calculation: keep in decimal format to avoid double conversions
+    cml_x = np.linspace(0, frontier['volatility'].max() * np.sqrt(252), 100)
+    cml_y = np.array([cml.expected_return(vol) for vol in cml_x])
+    # Convert to percentage for display
+    cml_x_pct = cml_x * 100
+    cml_y_pct = cml_y * 100
+    ax.plot(cml_x_pct, cml_y_pct, 'r--', linewidth=2, label='Capital Market Line')
 
     ax.scatter(0, optimizer.annual_risk_free_rate * 252 * 100, marker='o', s=200,
               color='red', label='Risk-Free Asset', zorder=5, edgecolors='darkred', linewidth=2)

@@ -285,26 +285,32 @@ def plot_allocation_comparison(optimizer: PortfolioOptimizer, save_path: str = N
     max_sharpe = optimizer.max_sharpe_portfolio()
     min_var = optimizer.min_variance_portfolio()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7))
 
     # Max Sharpe allocation
     weights_ms = [max_sharpe['weights'][a] for a in optimizer.assets]
     colors = plt.cm.Set3(np.linspace(0, 1, len(optimizer.assets)))
-    ax1.pie(weights_ms, labels=optimizer.assets, autopct='%1.1f%%',
-           colors=colors, startangle=90, textprops={'fontsize': 10})
-    ax1.set_title('Max Sharpe Portfolio Allocation\n' +
+    ax1.pie(
+        weights_ms, autopct='%1.1f%%', colors=colors, startangle=90,
+        textprops={'fontsize': 9, 'weight': 'bold'}
+    )
+    ax1.set_title('Max Sharpe Portfolio\n' +
                  f"Return: {max_sharpe['return']*252:.2%} | " +
                  f"Vol: {max_sharpe['volatility']*np.sqrt(252):.2%}",
-                fontsize=11, fontweight='bold')
+                fontsize=11, fontweight='bold', pad=20)
+    ax1.legend(optimizer.assets, loc='center left', bbox_to_anchor=(1, 0, 0.5, 1), fontsize=9)
 
     # Min Variance allocation
     weights_mv = [min_var['weights'][a] for a in optimizer.assets]
-    ax2.pie(weights_mv, labels=optimizer.assets, autopct='%1.1f%%',
-           colors=colors, startangle=90, textprops={'fontsize': 10})
-    ax2.set_title('Min Variance Portfolio Allocation\n' +
+    ax2.pie(
+        weights_mv, autopct='%1.1f%%', colors=colors, startangle=90,
+        textprops={'fontsize': 9, 'weight': 'bold'}
+    )
+    ax2.set_title('Min Variance Portfolio\n' +
                  f"Return: {min_var['return']*252:.2%} | " +
                  f"Vol: {min_var['volatility']*np.sqrt(252):.2%}",
-                fontsize=11, fontweight='bold')
+                fontsize=11, fontweight='bold', pad=20)
+    ax2.legend(optimizer.assets, loc='center left', bbox_to_anchor=(1, 0, 0.5, 1), fontsize=9)
 
     plt.tight_layout()
     if save_path:
@@ -461,17 +467,26 @@ def generate_all_charts(optimizer: PortfolioOptimizer, returns: pd.DataFrame) ->
     weights_ms = [max_sharpe['weights'][a] for a in optimizer.assets]
     weights_mv = [min_var['weights'][a] for a in optimizer.assets]
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7))
     colors = plt.cm.Set3(np.linspace(0, 1, len(optimizer.assets)))
 
-    ax1.pie(weights_ms, labels=optimizer.assets, autopct='%1.1f%%',
-           colors=colors, startangle=90, textprops={'fontsize': 10})
-    ax1.set_title('Max Sharpe Portfolio', fontsize=11, fontweight='bold')
+    # Max Sharpe Portfolio - use legend instead of labels
+    ax1.pie(
+        weights_ms, autopct='%1.1f%%', colors=colors, startangle=90,
+        textprops={'fontsize': 9, 'weight': 'bold'}
+    )
+    ax1.set_title('Max Sharpe Portfolio', fontsize=12, fontweight='bold', pad=20)
+    ax1.legend(optimizer.assets, loc='center left', bbox_to_anchor=(1, 0, 0.5, 1), fontsize=9)
 
-    ax2.pie(weights_mv, labels=optimizer.assets, autopct='%1.1f%%',
-           colors=colors, startangle=90, textprops={'fontsize': 10})
-    ax2.set_title('Min Variance Portfolio', fontsize=11, fontweight='bold')
+    # Min Variance Portfolio - use legend instead of labels
+    ax2.pie(
+        weights_mv, autopct='%1.1f%%', colors=colors, startangle=90,
+        textprops={'fontsize': 9, 'weight': 'bold'}
+    )
+    ax2.set_title('Min Variance Portfolio', fontsize=12, fontweight='bold', pad=20)
+    ax2.legend(optimizer.assets, loc='center left', bbox_to_anchor=(1, 0, 0.5, 1), fontsize=9)
 
+    plt.tight_layout()
     charts['allocation_comparison'] = fig_to_base64(fig)
 
     return charts

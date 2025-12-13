@@ -1,299 +1,300 @@
 # Portfolio Optimizer
 
-A Python library for modern portfolio theory calculations with **live market data** integration. Fetch real stock data from Yahoo Finance (free, no API key), optimize portfolios, and generate professional analysis reports.
+A comprehensive Python-based portfolio optimization tool that implements Modern Portfolio Theory (MPT), Capital Asset Pricing Model (CAPM), and generates interactive reports with professional visualizations.
+
+![Sample Report](https://img.shields.io/badge/Sample-Report-blue)
+![Python](https://img.shields.io/badge/Python-3.9+-green)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ## Overview
 
-This project automates portfolio analysis with real-world data:
+This tool helps investors optimize their portfolio allocation by:
+- Calculating optimal asset weights for maximum risk-adjusted returns
+- Generating efficient frontiers and Capital Market Line analysis
+- Performing CAPM-based security valuation
+- Creating interactive HTML reports with embedded visualizations
 
-- **Live Data Fetching**: Automatically download historical stock prices from Yahoo Finance (free, no API key)
-- **Efficient Frontier Calculation**: Find optimal portfolios across risk-return tradeoff
-- **Sharpe Ratio Optimization**: Maximize risk-adjusted returns
-- **Capital Market Line (CML)**: Analyze optimal combinations of risky and risk-free assets
-- **Automated Report Generation**: Professional text reports with insights and recommendations
-- **Portfolio Statistics**: Returns, volatility, correlation, covariance matrices
+**[📊 View Sample Report](SAMPLE_REPORT.html)** (Download and open in browser)
 
-## Problem
+**[📋 Complete Feature List](FEATURES.md)**
 
-Traditional portfolio analysis requires:
-- Manual data collection from multiple sources
-- Excel spreadsheets prone to errors
-- No version control or reproducibility
-- Tedious manual calculations
-- No professional reporting
+## Key Features
 
-This library makes portfolio analysis **fully automated, data-driven, and professional**.
+### Portfolio Optimization
+✓ **Maximum Sharpe Ratio Portfolio**: Find the optimal allocation that maximizes risk-adjusted returns
+✓ **Minimum Variance Portfolio**: Identify the least risky portfolio combination
+✓ **Efficient Frontier**: Generate the complete set of optimal portfolios
+✓ **Position Size Constraints**: Prevent unrealistic over-concentration (default: max 40% per asset)
 
-## Solution
+### Analysis Tools
+✓ **Capital Market Line (CML)**: Analyze risk-return tradeoffs with leverage/lending
+✓ **Security Market Line (SML)**: CAPM-based asset valuation with beta and alpha calculations
+✓ **Correlation Analysis**: Understand asset relationships and diversification benefits
+✓ **Risk Metrics**: Comprehensive volatility, covariance, and Sharpe ratio calculations
 
-A complete end-to-end portfolio analysis system:
+### Reporting
+✓ **Interactive HTML Reports**: Professional reports with embedded charts
+✓ **6 Visualization Types**: Efficient Frontier, Correlation Heatmap, Risk-Return Scatter, Sharpe Comparison, Cumulative Returns, Allocation Charts
+✓ **CAPM Analysis**: Beta, alpha, and valuation for each asset vs market (S&P 500)
 
-1. **YahooFinanceAPI**: Fetch real historical stock data (free, no API key)
-2. **PortfolioOptimizer**: Core class for efficient frontier and optimization
-3. **CapitalMarketLine**: CML calculations and analysis
-4. **SecurityMarketLine**: CAPM-based valuation and alpha calculations
-5. **PortfolioReport**: Automated professional report generation
-6. **Interactive Main Script**: User-friendly CLI for analysis
+## Quick Start
 
-## Tech Stack
-
-- **Python 3.8+**
-- **pandas**: Data manipulation and analysis
-- **NumPy**: Numerical computations
-- **SciPy**: Optimization algorithms (SLSQP for constrained optimization)
-- **yfinance**: Free stock data from Yahoo Finance
-- **Matplotlib**: Visualization (optional)
-
-## Installation
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/portfolio-optimizer.git
+cd portfolio-optimizer
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## Quick Start (No API Key Needed!)
-
-### 1. Install Dependencies
+### Basic Usage
 
 ```bash
-pip install -r requirements.txt
+# Run the interactive portfolio optimizer
+python main.py
 ```
 
-### 2. Run the Interactive Analysis
-
-```bash
-python3 main.py
-```
-
-### 3. Follow the Prompts
-
-The script will guide you through:
-1. Enter stock tickers (e.g., AAPL, MSFT, GOOGL, TSLA)
-2. Select historical data period (1, 2, 5, or 10 years)
-3. Name your portfolio
-4. Automatic analysis and report generation (takes 10-30 seconds)
+The program will guide you through:
+1. Selecting stock tickers (e.g., AAPL, GOOGL, MSFT)
+2. Choosing the historical data period (1, 2, 5, or 10 years)
+3. Naming your portfolio
+4. Selecting report format (HTML with charts recommended)
 
 ### Example Output
 
 ```
-PORTFOLIO ANALYSIS REPORT
-My Tech Portfolio
-December 02, 2024 at 14:32:00
+📊 Generating visualizations and HTML report...
+✓ HTML report saved: portfolio_report_20251203_233928.html
 
-================================================================================
-1. ASSET STATISTICS
-================================================================================
-           Annual Return  Annual Volatility  Monthly Return  Monthly Volatility
-AAPL             0.285230          0.342156        0.021286          0.098857
-MSFT             0.298120          0.315642        0.022110          0.091187
-GOOGL            0.267890          0.298765        0.019850          0.086378
-TSLA             0.425300          0.487623        0.031525          0.140896
+Maximum Sharpe Ratio Portfolio:
+  SHY:    40.00%
+  JNJ:    31.99%
+  GOOGL:  14.28%
+  NVDA:   12.20%
+  META:    1.54%
 
-...
-[Full detailed report with optimal allocations, risk analysis, CML analysis, etc.]
+  Annual Return:  25.35%
+  Volatility:      9.49%
+  Sharpe Ratio:    2.25
 ```
 
-## Usage Examples
+## Advanced Usage
 
-### Basic Example: Programmatic Use
+### Programmatic API
 
 ```python
-from data_fetcher_yfinance import YahooFinanceAPI
 from portfolio import PortfolioOptimizer
-from report_generator import PortfolioReport
+from data_fetcher_yfinance import YahooFinanceAPI
+import numpy as np
 
-# Fetch real data (free, no API key needed)
+# Fetch data
 api = YahooFinanceAPI()
-returns = api.get_returns_dataframe(['AAPL', 'MSFT', 'GOOGL'], period='2y')
+returns = api.get_returns_dataframe(['AAPL', 'GOOGL', 'MSFT'], period='2y')
 
-# Optimize
-optimizer = PortfolioOptimizer(returns, risk_free_rate=0.045)
-
-# Generate report
-report = PortfolioReport(optimizer, portfolio_name="Tech Portfolio")
-report.print_report()
-report.save_report("my_portfolio_report.txt")
-```
-
-### Efficient Frontier
-
-```python
-# Generate efficient frontier
-frontier = optimizer.efficient_frontier(n_points=100)
-print(frontier)
-
-# Find portfolio with specific target return
-target_portfolio = optimizer.portfolio_for_target_return(target_return=0.12)
-```
-
-### CAPM Analysis
-
-```python
-from portfolio import SecurityMarketLine
-
-# Initialize SML with market data
-sml = SecurityMarketLine(
-    market_return=0.10,
-    market_volatility=0.15,
-    risk_free_rate=0.025,
-    asset_returns=returns
+# Create optimizer with position constraints
+optimizer = PortfolioOptimizer(
+    returns,
+    risk_free_rate=0.04,      # 4% annual
+    max_position_size=0.40    # Max 40% per asset
 )
 
-# Analyze individual assets
-analysis = sml.analyze_assets(market_proxy=sp500_returns)
-print(analysis[['asset', 'beta', 'alpha', 'valuation']])
+# Get optimal portfolios
+max_sharpe = optimizer.max_sharpe_portfolio()
+min_variance = optimizer.min_variance_portfolio()
+frontier = optimizer.efficient_frontier(n_points=100)
+
+# Access results
+print(f"Optimal weights: {max_sharpe['weights']}")
+print(f"Expected return: {max_sharpe['return'] * 252:.2%}")
+print(f"Sharpe ratio: {max_sharpe['sharpe_ratio'] * np.sqrt(252):.4f}")
 ```
 
-## Core Classes
+### Generate Custom Reports
 
-### PortfolioOptimizer
-
-Optimizes portfolio allocations based on mean-variance framework.
-
-**Key Methods:**
-- `portfolio_stats(weights)`: Calculate return, volatility, Sharpe ratio for given weights
-- `max_sharpe_portfolio()`: Find portfolio maximizing Sharpe ratio
-- `min_variance_portfolio()`: Find minimum variance portfolio
-- `efficient_frontier(n_points)`: Generate efficient frontier points
-- `portfolio_for_target_return(target_return)`: Minimum variance for target return
-
-### CapitalMarketLine
-
-Analyzes optimal combinations of risky and risk-free assets.
-
-**Key Methods:**
-- `expected_return(portfolio_volatility)`: Expected return for volatility on CML
-- `required_volatility(target_return)`: Volatility needed to achieve return on CML
-
-### SecurityMarketLine
-
-CAPM-based analysis and valuation.
-
-**Key Methods:**
-- `calculate_beta(asset_returns, market_returns)`: Beta relative to market
-- `calculate_alpha(asset_return, beta)`: Jensen's alpha
-- `required_return(beta)`: Expected return per CAPM
-- `analyze_assets(market_proxy)`: Full SML analysis for portfolio
-
-## Example Data
-
-### Two-Asset Portfolio
-- Stock A: 15.7% return, 17.6% volatility
-- Stock B: 17.1% return, 29.3% volatility
-- Risk-Free Asset: 2.5% return, 0% volatility
-- Correlation: 0.297
-
-**Usage:**
 ```python
-from example_data import simple_two_asset_example
-returns = simple_two_asset_example()
+from report_generator_enhanced import EnhancedPortfolioReport
+
+# Generate HTML report with charts
+report = EnhancedPortfolioReport(
+    optimizer,
+    returns,
+    portfolio_name="My Tech Portfolio"
+)
+html_file = report.save_html_report()
 ```
-
-### 10-Stock Market Portfolio
-Real-world style data with 10 stocks (AAPL, XOM, LNC, MRK, WMT, HOG, RMD, AMZN, CMG, FB) with realistic betas and returns.
-
-**Usage:**
-```python
-from example_data import generate_monthly_returns
-returns = generate_monthly_returns(n_months=60)
-```
-
-## Results You Get
-
-Running `example_analysis.py` demonstrates:
-
-1. **Portfolio Statistics**: Returns, volatility, correlations
-2. **Optimal Allocations**: Sharpe-maximizing and min-variance weights
-3. **Efficient Frontier**: Risk-return frontier for all possible portfolios
-4. **CML Analysis**: Optimal risky-safe asset combinations
-5. **SML Valuation**: Alpha and beta for each security (which are under/overvalued)
-6. **Target Return Portfolios**: Minimal-risk portfolio for desired returns
 
 ## Mathematical Foundation
 
-### Sharpe Ratio
+All calculations are based on Modern Portfolio Theory and CAPM:
+
+### Core Formulas
+
+**Portfolio Return:**
 ```
-Sharpe = (Portfolio Return - Risk-Free Rate) / Portfolio Volatility
+R_p = Σ(w_i × R_i)
 ```
 
-### Portfolio Return
+**Portfolio Variance:**
 ```
-E(R_p) = Σ w_i * E(R_i)
-```
-
-### Portfolio Volatility
-```
-σ_p = √(w^T * Σ * w)
-where Σ is the covariance matrix
+σ_p² = w^T × Cov × w
 ```
 
-### Capital Market Line
+**Sharpe Ratio:**
 ```
-E(R) = r_f + Sharpe * σ_p
-```
-
-### CAPM / Security Market Line
-```
-E(R_i) = r_f + β_i * (E(R_m) - r_f)
-where β_i = Cov(R_i, R_m) / Var(R_m)
+Sharpe = (R_p - R_f) / σ_p
 ```
 
-### Jensen's Alpha
+**CAPM Beta:**
 ```
-α = R_i - [r_f + β_i * (R_m - r_f)]
-```
-
-## How to Run
-
-### Basic Analysis
-```bash
-python3 example_analysis.py
+β_i = Cov(R_i, R_M) / Var(R_M)
 ```
 
-### With Jupyter
-```bash
-jupyter notebook
-# Open and run the example notebooks
+**Jensen's Alpha:**
 ```
+α_i = R_i - [R_f + β_i × (R_M - R_f)]
+```
+
+**Capital Market Line:**
+```
+E[R_p] = R_f + Sharpe_M × σ_p
+```
+
+### Complete Documentation
+- **[FORMULAS_AND_CALCULATIONS.md](FORMULAS_AND_CALCULATIONS.md)** - Detailed mathematical explanations
+- **[FORMULAS_QUICK_REFERENCE.txt](FORMULAS_QUICK_REFERENCE.txt)** - Quick lookup guide
+- **[validate_formulas.py](validate_formulas.py)** - Working examples with step-by-step calculations
+
+## Example Results
+
+Using stocks: AAPL, AMD, GOOGL, JNJ, META, MSFT, NVDA, SHY, TSLA (2-year period)
+
+### Maximum Sharpe Portfolio (Constrained)
+- **Allocation**: 40% SHY, 32% JNJ, 14% GOOGL, 12% NVDA, 2% META
+- **Annual Return**: 25.35%
+- **Annual Volatility**: 9.49%
+- **Sharpe Ratio**: 2.25
+
+### Minimum Variance Portfolio
+- **Allocation**: 40% SHY, 37% JNJ, 15% MSFT, 4% GOOGL
+- **Annual Return**: 15.40%
+- **Annual Volatility**: 7.59%
+- **Sharpe Ratio**: 1.50
 
 ## Project Structure
 
 ```
 portfolio-optimizer/
-├── portfolio.py              # Core classes and functions
-├── example_data.py           # Sample data generators
-├── example_analysis.py       # Example analyses
-├── requirements.txt          # Dependencies
-└── README.md                 # This file
+├── main.py                          # Interactive CLI interface
+├── portfolio.py                     # Core optimization engine
+├── data_fetcher_yfinance.py         # Yahoo Finance data retrieval
+├── report_generator.py              # Text report generation
+├── report_generator_enhanced.py     # HTML report with charts
+├── visualization.py                 # Chart generation
+├── validate_formulas.py             # Formula verification script
+├── FORMULAS_AND_CALCULATIONS.md     # Complete mathematical documentation
+├── FORMULAS_QUICK_REFERENCE.txt     # Quick formula lookup
+├── FEATURES.md                      # Detailed feature list
+├── SAMPLE_REPORT.html               # Example generated report
+├── requirements.txt                 # Python dependencies
+├── LICENSE                          # MIT License
+└── README.md                        # This file
 ```
 
-## Next Steps
+## Technical Details
 
-Extensions possible:
-- Constraint-based optimization (min/max weights, sector limits)
-- Black-Litterman model for subjective return views
-- Risk factor models (Fama-French, etc.)
-- Portfolio backtesting engine
-- Interactive Streamlit dashboard
-- Support for constraints and transaction costs
+### Optimization
+- **Algorithm**: Sequential Least Squares Programming (SLSQP)
+- **Library**: scipy.optimize.minimize
+- **Constraints**: Weights sum to 1, Long-only (0 ≤ w ≤ 0.40)
 
-## Real-World Applications
+### Data Processing
+- **Source**: Yahoo Finance (free, no API key)
+- **Frequency**: Daily returns
+- **Annualization**:
+  - Returns: × 252 (trading days)
+  - Volatility: × √252
+  - Sharpe Ratio: × √252
 
-1. **Wealth Management**: Build optimal client portfolios
-2. **Fund Management**: Construct index funds or active strategies
-3. **Risk Management**: Analyze portfolio risk and volatility
-4. **Research**: Validate CAPM, test alpha/beta strategies
-5. **Education**: Teach modern portfolio theory concepts
+### Key Assumptions
+- Normal distribution of returns
+- No transaction costs
+- Static portfolio (no rebalancing)
+- Historical data reflects future patterns
 
-## References
+## Data Sources
 
-- Markowitz, H. (1952). "Portfolio Selection"
-- Sharpe, W. (1964). "Capital Asset Prices"
-- Lintner, J. (1965). "The valuation of risk assets"
+- **Stock Prices**: Yahoo Finance (yfinance)
+- **Risk-Free Rate**: US Treasury 10-year yield (^TNX)
+- **Market Proxy**: S&P 500 (^GSPC)
+
+All prices are auto-adjusted for splits and dividends.
+
+## Validation
+
+Run the validation script to verify all calculations:
+
+```bash
+python validate_formulas.py
+```
+
+This demonstrates:
+- Daily to annual conversions
+- Portfolio variance calculations
+- Sharpe ratio computation
+- Beta and Alpha calculations
+- Capital Market Line
+
+## Requirements
+
+```
+numpy>=1.21.0
+pandas>=1.3.0
+scipy>=1.7.0
+matplotlib>=3.4.0
+seaborn>=0.11.0
+yfinance>=0.1.63
+```
+
+## Limitations
+
+1. **Historical Data**: Past performance ≠ future results
+2. **Normal Distribution**: Assumes Gaussian returns
+3. **No Transaction Costs**: Ignores trading fees
+4. **Static Model**: No dynamic rebalancing
+5. **Market Efficiency**: Assumes efficient markets
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Author
+## References
 
-Built as a portfolio project demonstrating Python, quantitative finance, and software architecture.
+### Academic Papers
+1. Markowitz, H. (1952). "Portfolio Selection". *The Journal of Finance*, 7(1), 77-91.
+2. Sharpe, W. F. (1964). "Capital Asset Prices: A Theory of Market Equilibrium under Conditions of Risk". *The Journal of Finance*, 19(3), 425-442.
+3. Sharpe, W. F. (1966). "Mutual Fund Performance". *The Journal of Business*, 39(1), 119-138.
+
+### Resources
+- [Investopedia - Modern Portfolio Theory](https://www.investopedia.com/terms/m/modernportfoliotheory.asp)
+- [CFA Institute - Portfolio Management](https://www.cfainstitute.org/en/membership/professional-development/refresher-readings/portfolio-concepts)
+
+## Disclaimer
+
+This tool is for **educational and research purposes only**. It should not be considered as financial advice. Always consult with a qualified financial advisor before making investment decisions.
+
+---
+
+**Created by:** Varun
+**Last Updated:** December 2025
+**Version:** 1.0 (with Position Constraints)

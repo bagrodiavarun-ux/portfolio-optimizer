@@ -10,13 +10,15 @@ class PortfolioOptimizer:
     Sharpe ratios, and performance metrics for multi-asset portfolios.
     """
 
-    def __init__(self, returns: pd.DataFrame, risk_free_rate: float = 0.025):
+    def __init__(self, returns: pd.DataFrame, risk_free_rate: float = 0.025,
+                 max_position_size: float = 0.40):
         """
         Initialize portfolio optimizer.
 
         Args:
             returns: DataFrame with asset returns (rows: dates, columns: assets) - DAILY returns
             risk_free_rate: Annual risk-free rate (default 2.5%)
+            max_position_size: Maximum weight for any single asset (default 0.40 = 40%)
         """
         self.returns = returns
         # Convert annual risk-free rate to daily rate (for use with daily returns)
@@ -24,6 +26,7 @@ class PortfolioOptimizer:
         self.annual_risk_free_rate = risk_free_rate
         self.assets = returns.columns.tolist()
         self.n_assets = len(self.assets)
+        self.max_position_size = max_position_size
 
         # Calculate statistics (daily)
         self.mean_returns = returns.mean()
@@ -107,7 +110,7 @@ class PortfolioOptimizer:
             Dict with weights, return, volatility, and Sharpe ratio
         """
         constraints = {'type': 'eq', 'fun': lambda x: np.sum(x) - 1}
-        bounds = tuple((0, 1) for _ in range(self.n_assets))
+        bounds = tuple((0, self.max_position_size) for _ in range(self.n_assets))
         initial_guess = np.array([1 / self.n_assets] * self.n_assets)
 
         result = minimize(
@@ -140,7 +143,7 @@ class PortfolioOptimizer:
             Dict with weights, return, volatility, and Sharpe ratio
         """
         constraints = {'type': 'eq', 'fun': lambda x: np.sum(x) - 1}
-        bounds = tuple((0, 1) for _ in range(self.n_assets))
+        bounds = tuple((0, self.max_position_size) for _ in range(self.n_assets))
         initial_guess = np.array([1 / self.n_assets] * self.n_assets)
 
         result = minimize(
@@ -190,7 +193,7 @@ class PortfolioOptimizer:
                 {'type': 'eq', 'fun': lambda x: np.sum(x) - 1},
                 {'type': 'eq', 'fun': make_return_constraint(target_return)}
             ]
-            bounds = tuple((0, 1) for _ in range(self.n_assets))
+            bounds = tuple((0, self.max_position_size) for _ in range(self.n_assets))
             initial_guess = np.array([1 / self.n_assets] * self.n_assets)
 
             result = minimize(
@@ -227,7 +230,7 @@ class PortfolioOptimizer:
             {'type': 'eq', 'fun': lambda x: np.sum(x) - 1},
             {'type': 'eq', 'fun': lambda x: np.sum(self.mean_returns * x) - target_return}
         ]
-        bounds = tuple((0, 1) for _ in range(self.n_assets))
+        bounds = tuple((0, self.max_position_size) for _ in range(self.n_assets))
         initial_guess = np.array([1 / self.n_assets] * self.n_assets)
 
         result = minimize(

@@ -1,0 +1,109 @@
+================================================================================
+PORTFOLIO OPTIMIZATION - QUICK REFERENCE CARD
+================================================================================
+
+ANNUALIZATION (252 trading days/year)
+--------------------------------------
+Annual Return        = Daily Return × 252
+Annual Volatility    = Daily Volatility × √252
+Annual Sharpe        = Daily Sharpe × √252
+Annual Covariance    = Daily Covariance × 252
+
+BASIC METRICS
+-------------
+Daily Return         = (Price_t - Price_{t-1}) / Price_{t-1}
+Expected Return      = Average of daily returns
+Volatility (σ)       = Standard deviation of returns
+Covariance(i,j)      = Avg[(R_i - E[R_i]) × (R_j - E[R_j])]
+Correlation(i,j)     = Cov(i,j) / (σ_i × σ_j)
+
+PORTFOLIO METRICS
+-----------------
+Portfolio Return     = Σ(w_i × R_i)
+Portfolio Variance   = w^T × Cov_Matrix × w
+Portfolio Volatility = √(Portfolio Variance)
+Sharpe Ratio         = (R_p - R_f) / σ_p
+
+OPTIMIZATION OBJECTIVES
+-----------------------
+Max Sharpe:    Maximize (R_p - R_f) / σ_p
+Min Variance:  Minimize σ_p
+Target Return: Minimize σ_p subject to R_p = R_target
+
+CONSTRAINTS
+-----------
+1. Σ(w_i) = 1              (weights sum to 1)
+2. 0 ≤ w_i ≤ 0.40          (long-only, max 40%)
+
+CAPITAL MARKET LINE (CML)
+-------------------------
+E[R_p] = R_f + Sharpe_M × σ_p
+
+Where:
+  R_f       = Risk-free rate
+  Sharpe_M  = Sharpe ratio of market portfolio
+  σ_p       = Portfolio volatility
+
+CAPM / SECURITY MARKET LINE (SML)
+----------------------------------
+Beta (β):         β_i = Cov(R_i, R_M) / Var(R_M)
+Required Return:  E[R_i] = R_f + β_i × (R_M - R_f)
+Alpha (α):        α_i = R_i - E[R_i]
+
+Interpretation:
+  α > 0  →  Undervalued (outperforming)
+  α < 0  →  Overvalued (underperforming)
+  β = 1  →  Moves with market
+  β > 1  →  More volatile than market
+  β < 1  →  Less volatile than market
+
+KEY IMPLEMENTATION DETAILS
+---------------------------
+Risk-Free Rate:   US Treasury 10-year yield (^TNX)
+Market Proxy:     S&P 500 (^GSPC)
+Optimization:     scipy.optimize.minimize (SLSQP)
+Data Source:      Yahoo Finance (yfinance)
+Price Adjustment: Auto-adjusted for splits/dividends
+
+EXAMPLE CALCULATION
+-------------------
+Given:
+  Daily Return    = 0.001  (0.1%)
+  Daily Volatility = 0.015  (1.5%)
+  Daily Sharpe    = 0.05
+  Risk-free (ann) = 0.04   (4%)
+
+Annualized:
+  Annual Return    = 0.001 × 252 = 0.252 (25.2%)
+  Annual Volatility = 0.015 × √252 = 0.238 (23.8%)
+  Annual Sharpe    = 0.05 × √252 = 0.794
+
+PORTFOLIO EXAMPLE
+-----------------
+Assets: A (50%), B (30%), C (20%)
+Returns: 0.10, 0.15, 0.08
+Covariance matrix given
+
+Portfolio Return:
+  R_p = 0.50×0.10 + 0.30×0.15 + 0.20×0.08
+      = 0.05 + 0.045 + 0.016 = 0.111 (11.1%)
+
+Portfolio Variance:
+  σ_p² = w^T × Cov × w  (matrix multiplication)
+
+VERIFICATION SOURCES
+--------------------
+1. Investopedia - Portfolio Theory
+2. CFA Institute - Quantitative Methods
+3. "Modern Portfolio Theory" - Markowitz (1952)
+4. "Capital Asset Prices" - Sharpe (1964)
+5. Python for Finance - Yves Hilpisch
+
+FILE LOCATIONS
+--------------
+Full Details:     FORMULAS_AND_CALCULATIONS.md
+Code:             portfolio.py
+Data Fetching:    data_fetcher_yfinance.py
+Report Generator: report_generator_enhanced.py
+
+================================================================================
